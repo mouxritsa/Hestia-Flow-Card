@@ -7,12 +7,13 @@
 - ☕ Support my work: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mouxritsa)
 
 ### Heating Mode
-![Heating Preview](docs/preview-heating.jpg)
+![Heating Preview](docs/preview-heating.gif)
 
 ### Turbo Mode
-![Turbo Preview](docs/preview-turbo.jpg)
+![Turbo Preview](docs/preview-turbo.gif)
 
-**Version v0.0.1** · 🇬🇷 🇩🇪 🇬🇧 A full-screen, animated flow card for a **heating boiler** in Home Assistant.
+**Version v0.0.1** · 🇬🇷 🇩🇪 🇬🇧
+### A full-screen, animated flow card for a **heating boiler** in Home Assistant.
 
 > ### ⚠️ This is my first attempt
 > This is the **first card I have ever made**, so it is version **0.0.1**.
