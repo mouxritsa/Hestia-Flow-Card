@@ -1,0 +1,38 @@
+# ======================================================================
+#  Hestia Flow Card - the card itself (Dashboard > Edit > Add card > "Manual")
+#  Version v0.0.1 - made by Mouxritsa together with Claude (first attempt)
+# ======================================================================
+#  You can also fill all of this with the visual editor of the card.
+#  Replace every  YOUR_...  with the entity of YOUR installation.
+#  Delete the lines of the things you do not have.
+#  For a FULL-SCREEN look, set the dashboard view type to "Panel (1 card)".
+# ======================================================================
+type: custom:hestia-flow-card
+name: Boiler
+# --- temperatures (sensor) ---
+outdoor_temp: sensor.YOUR_OUTDOOR_TEMPERATURE
+supply_temp: sensor.YOUR_BOILER_SUPPLY_TEMPERATURE
+return_temp: sensor.YOUR_BOILER_RETURN_TEMPERATURE
+boiler_temp: sensor.YOUR_BOILER_BODY_TEMPERATURE          # optional
+# --- heating request ---
+climate_entity: climate.YOUR_ROOM_THERMOSTAT
+demand_entity: binary_sensor.hestia_heating_demand
+target_temp: sensor.hestia_target_temperature           # optional
+# --- relays and Turbo ---
+relay6: switch.YOUR_RELAY_6_BOILER_ENABLE
+relay7: switch.YOUR_RELAY_7_TURBO
+turbo_entity: input_boolean.hestia_turbo
+confirm_turbo: true
+# --- what do you have? ---
+has_radiators: true
+has_boiler: true               # hot-water tank
+has_underfloor: false
+has_triodos: false             # draw 3-way valve 1 (virtual)
+has_triodos_uf: false          # draw 3-way valve 2 (virtual)
+# --- optional extras (delete the lines you do not use) ---
+# underfloor_entity: input_boolean.YOUR_UNDERFLOOR_SWITCH
+# underfloor_max_temp: 40
+# triodos_entity: switch.YOUR_3WAY_VALVE_1
+# triodos_uf_entity: switch.YOUR_3WAY_VALVE_2
+# circulator_entity: switch.YOUR_CIRCULATOR_PUMP
+# neon_text: YOUR NAME

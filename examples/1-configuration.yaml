@@ -1,0 +1,75 @@
+# ======================================================================
+#  Hestia Flow Card - what to add to your  configuration.yaml
+#  Version v0.0.1 - made by Mouxritsa together with Claude (first attempt)
+# ======================================================================
+#  Replace every  YOUR_...  with the entity of YOUR installation.
+#  Do NOT change the names  hestia_turbo, hestia_heating_demand,
+#  hestia_target_temperature  unless you also change them in the
+#  automations file and in the card.
+#  TIP: use "Find and replace" of your editor, the placeholders appear several times.
+#
+#  IMPORTANT: a YAML file may contain each top-level key only ONCE.
+#  If your configuration.yaml already has  input_boolean:  or  template:
+#  do NOT paste a second one - add the items below under the existing key.
+# ======================================================================
+
+# ---- 1) A switch for the Turbo button of the card --------------------
+input_boolean:
+  hestia_turbo:
+    name: Boiler Turbo (hot-water tank)
+    icon: mdi:rocket-launch
+
+# ---- 2) Two helper entities (template) --------------------------------
+template:
+  # 2a) "Is the house asking for heat?"  -> use it as  demand_entity  in the card
+  - binary_sensor:
+      - name: "Hestia Heating Demand"
+        unique_id: hestia_heating_demand
+        state: >
+          {# { put your room thermostat (climate) here } #}
+          {% set cl = 'climate.YOUR_ROOM_THERMOSTAT' %}
+          {% set action = state_attr(cl, 'hvac_action') %}
+          {% if states(cl) in ['off', 'unavailable', 'unknown'] %}
+            false
+          {% elif action in ['heating', 'idle', 'off'] %}
+            {{ action == 'heating' }}
+          {% else %}
+            {# the thermostat has no hvac_action: compare the temperatures #}
+            {{ state_attr(cl, 'current_temperature') | float(0) < state_attr(cl, 'temperature') | float(0) }}
+          {% endif %}
+
+  # 2b) The compensation: "how hot should the boiler water be right now?"
+  #     -> use it as  target_temp  in the card, and in the relay-6 automation.
+  #     0 means "do not heat".   Read docs/COMPENSATION.md to understand and tune it.
+  - sensor:
+      - name: "Hestia Target Temperature"
+        unique_id: hestia_target_temperature
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state: >
+          {# ---------- numbers you can change (see docs/COMPENSATION.md) ---------- #}
+          {% set base      = 75   %}  {# water temperature when it is 0 °C outside, before the room setpoint shift #}
+          {% set slope     = 2.0  %}  {# °C of water for every 1 °C colder outside (the "heating curve") #}
+          {% set shift     = 3.0  %}  {# °C of water for every 1 °C the room setpoint is above 21 °C #}
+          {% set min_water = 55   %}  {# never ask for less than this when heating (protects a simple boiler) #}
+          {% set max_water = 70   %}  {# never ask for more than this #}
+          {% set cutoff    = 22.0 %}  {# at or above this outdoor temperature no heating is requested #}
+          {# ------------------------------------------------------------------------ #}
+          {# { put your outdoor temperature sensor here } #}
+          {% set t_out = states('sensor.YOUR_OUTDOOR_TEMPERATURE') | float(15) %}
+          {# { put your room thermostat (climate) here } #}
+          {% set t_set = state_attr('climate.YOUR_ROOM_THERMOSTAT', 'temperature') | float(21.0) %}
+          {% set target = (base - (t_out * slope)) + ((t_set - 21.0) * shift) %}
+          {% if is_state('input_boolean.hestia_turbo', 'on') %}
+            {{ max_water }}
+          {% elif is_state('binary_sensor.hestia_heating_demand', 'off') %}
+            0
+          {% elif t_out >= cutoff %}
+            0
+          {% elif target > max_water %}
+            {{ max_water }}
+          {% elif target < min_water %}
+            {{ min_water }}
+          {% else %}
+            {{ target | round(1) }}
+          {% endif %}
