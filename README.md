@@ -1,4 +1,4 @@
-# Hestia Flow Card
+# hestia-flow-card
 
 ### Hi there 👋 I'm Mouxritsa
 
