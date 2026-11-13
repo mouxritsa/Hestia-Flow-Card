@@ -13,8 +13,8 @@
 ![Turbo Preview](docs/preview-turbo.gif)
 
 - 🇬🇷 🇩🇪 🇬🇧
-**Version v0.0.1** ·
-**A full-screen, animated flow card for a **heating boiler** in Home Assistant.
+** Version v0.0.1** ·
+** A full-screen, animated flow card for a **heating boiler** in Home Assistant.
 
 > ### ⚠️ This is my first attempt
 > This is the **first card I have ever made**, so it is version **0.0.1**.
