@@ -6,13 +6,13 @@
 - 📺 Watch My Videos: [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@mouxritsa)
 - ☕ Support my work: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mouxritsa)
 
-- ### Heating Mode
-![Heating Preview](docs/preview-heating.gif)
+### Heating Mode
+![Heating Preview](docs/preview-heating.jpg)
 
 ### Turbo Mode
-![Turbo Preview](docs/preview-turbo.gif)
+![Turbo Preview](docs/preview-turbo.jpg)
 
-** Version v0.0.1** · 🇬🇷 🇩🇪 🇬🇧 A full-screen, animated flow card for a **heating boiler** in Home Assistant.
+**Version v0.0.1** · 🇬🇷 🇩🇪 🇬🇧 A full-screen, animated flow card for a **heating boiler** in Home Assistant.
 
 > ### ⚠️ This is my first attempt
 > This is the **first card I have ever made**, so it is version **0.0.1**.
