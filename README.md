@@ -101,7 +101,7 @@ Your sensors can have any names. In this guide, **`{ put your ... here }`** or *
 
 1. In Home Assistant open **HACS**.
 2. Click the three dots **⋮** (top right) → **Custom repositories**.
-3. In *Repository* paste the address of this repository: `https://github.com/YOUR_GITHUB_NAME/hestia-flow-card` (replace `YOUR_GITHUB_NAME` with the real GitHub name of the owner of this repository - copy the address from your browser)
+3. In *Repository* paste the address of this repository: `https://github.com/mouxritsa/hestia-flow-card` (replace `mouxritsa` with the real GitHub name of the owner of this repository - copy the address from your browser)
 4. In *Type* choose **Dashboard** (in old HACS versions it is called **Lovelace**). Click **Add**.
 5. Find **Hestia Flow Card** in the list and click **Download**.
 6. Refresh the browser with **Ctrl+F5** (on a phone: close and open the app).
@@ -111,7 +111,7 @@ Your sensors can have any names. In this guide, **`{ put your ... here }`** or *
 
 ### Option B - manual
 
-1. Download `hestia-flow-card.js` from the latest [Release](https://github.com/YOUR_GITHUB_NAME/hestia-flow-card/releases).
+1. Download `hestia-flow-card.js` from the latest [Release](https://github.com/mouxritsa/hestia-flow-card/releases).
 2. Copy it into the folder `www` inside your Home Assistant configuration folder (the one that contains `configuration.yaml`). If the folder `www` does not exist, create it and **restart Home Assistant once**, otherwise `/local/` does not work.
 3. In Home Assistant open **Settings → Dashboards → ⋮ (top right) → Resources** (if you do not see *Resources*, first turn on **Advanced mode** in your user profile).
 4. Click **Add resource**:
