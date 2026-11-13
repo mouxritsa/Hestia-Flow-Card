@@ -12,7 +12,7 @@
 ### Turbo Mode
 ![Turbo Preview](docs/preview-turbo.gif)
 
-
+🇬🇷 🇩🇪 🇬🇧
 **Version v0.0.1** · A full-screen, animated flow card for a **heating boiler** in Home Assistant.
 
 > ### ⚠️ This is my first attempt
