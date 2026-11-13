@@ -3,14 +3,11 @@
 ### Hi there 👋 I'm Mouxritsa
 
 - 🏠 **My Project:** [Hestia Flow Card](https://github.com/mouxritsa/Hestia-Flow-Card) - A full-screen animated flow card for heating boilers in Home Assistant.
+- 📺 Watch My Videos: [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@mouxritsa)
 - ☕ Support my work: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mouxritsa)
 
 
-### Heating Mode
-![Heating Preview](docs/preview-heating.gif)
 
-### Turbo Mode
-![Turbo Preview](docs/preview-turbo.gif)
 
 
 **Version v0.0.1** · A full-screen, animated flow card for a **heating boiler** in Home Assistant.
