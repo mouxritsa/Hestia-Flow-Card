@@ -19,9 +19,9 @@
 
 This is the first card I have ever made, so it is version 0.0.1. It works on my own boiler room, but your installation is different from mine, so something may not work for you. Please open an Issue on GitHub and tell me what happened - I will try to fix it in future versions.
 
-Made by Mouxritsa together with Claude (the AI assistant of Anthropic).
+Made by Mouxritsa together with [Claude](https://claude.ai/login) (the AI assistant of Anthropic).
 
-Made with Claude
+
 
 ---
 
