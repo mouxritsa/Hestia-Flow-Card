@@ -39,10 +39,13 @@ Three small pieces do the job:
 | Piece | Where it lives | What it does |
 |---|---|---|
 | `binary_sensor.hestia_heating_demand` | `configuration.yaml` | "Is the house asking for heat?" (from your room thermostat) |
-| `sensor.hestia_target_temperature` | `configuration.yaml` | "How hot should the boiler water be right now?" (the compensation). `0` = do not heat |
+| `sensor.hestia_target_temperature` | `configuration.yaml` | "How hot should the boiler water be right now?" (the compensation). `0` = do not heat. It has **two curves**: one for radiators, one (cooler) for underfloor heating |
 | Automation **relay 6** | `automations.yaml` | Switches the boiler on and off to reach that water temperature |
 
-And one extra, if you want the Turbo button: an `input_boolean` and the automation **relay 7**.
+And two extras:
+
+- If you want the Turbo button: an `input_boolean` and the automation **relay 7**.
+- If you have **both radiators and underfloor heating**: an `input_boolean` (`input_boolean.hestia_underfloor`) that remembers which circuit is open. The compensation reads it to choose the right curve.
 
 The card reads `binary_sensor.hestia_heating_demand` (as `demand_entity`) and `sensor.hestia_target_temperature` (as `target_temp`) and draws the result.
 
@@ -59,9 +62,13 @@ then it is limited:
 - if **Turbo** is on → `max_water`,
 - else if the house is **not asking for heat** → `0`,
 - else if `outdoor >= cutoff` → `0` (too warm outside, no heating),
-- else the result is kept between `min_water` and `max_water`.
+- else the result is kept between the lowest and the highest water temperature **of the circuit that is open**.
+
+There are **two sets of numbers**. When `input_boolean.hestia_underfloor` is **ON** (or `underfloor_only` is `true`), the sensor uses the **underfloor** numbers. Otherwise it uses the **radiator** numbers. This is important: the room setpoint shift is added to the formula, so with a single curve a high thermostat setting (for example 30 °C) would ask for 70 °C even for the underfloor.
 
 ### The numbers (all of them are in the sensor, at the top)
+
+**Radiators:**
 
 | Name | Default | Meaning |
 |---|---|---|
@@ -70,7 +77,23 @@ then it is limited:
 | `shift` | 3.0 | How many °C hotter the water becomes for every 1 °C that you raise the room setpoint above 21 °C (and colder below 21 °C) |
 | `min_water` | 55 | The lowest water temperature when heating is on |
 | `max_water` | 70 | The highest water temperature |
+
+**Underfloor heating** (test values, **not tested in a real house**):
+
+| Name | Default | Meaning |
+|---|---|---|
+| `base_uf` | 40 | Water temperature (°C) when it is 0 °C outside and your room setpoint is 21 °C |
+| `slope_uf` | 0.8 | How many °C hotter the water becomes for every 1 °C colder outside |
+| `shift_uf` | 1.0 | How many °C hotter the water becomes for every 1 °C that you raise the room setpoint above 21 °C |
+| `min_uf` | 30 | The lowest water temperature when heating is on |
+| `max_uf` | 40 | The highest water temperature. **Never exceeded.** Ask your floor installer for the right number |
+
+**Common:**
+
+| Name | Default | Meaning |
+|---|---|---|
 | `cutoff` | 22.0 | From this outdoor temperature (°C) and above, no heating is requested |
+| `underfloor_only` | `false` | Set it to `true` **only** if you have underfloor heating and **no radiators** (then there is no button to choose, so the sensor always uses the underfloor curve) |
 
 ### What it gives with the defaults (room setpoint 21 °C)
 
@@ -86,11 +109,25 @@ then it is limited:
 
 Example with a higher room setpoint: you ask 24 °C and it is 5 °C outside → `65 + (24 - 21) × 3 = 74` → limited to **70 °C**.
 
+### What the underfloor curve gives with the defaults (room setpoint 21 °C)
+
+| Outside | Water target |
+|---|---|
+| -5 °C and 0 °C | 40 °C (the maximum) |
+| 5 °C | 36 °C |
+| 10 °C | 32 °C |
+| 12.5 °C | 30 °C (the minimum) |
+| 15 °C | 30 °C (the minimum) |
+| 22 °C and above | 0 - no heating |
+
+Example with a high room setpoint: you ask 30 °C and it is 0 °C outside → `40 + (30 - 21) × 1 = 49` → limited to **40 °C**. (With the radiator curve this same case gives 70 °C.)
+
 ### Why these choices
 
 - **Why `min_water` = 55 °C?** A **simple (non-condensing) boiler** is damaged when the **return water** is too cold (below about 45-50 °C): acid forms inside it. The relay-6 automation keeps the boiler running until the return water reaches (target − 8 °C). With a target of at least 55 °C that means the return water gets to about 47 °C or more before the boiler stops, so the boiler works with warmer return water. This is **not a guarantee**: when the boiler starts from cold, the return water is cold for the first minutes, and software cannot avoid that. The real cure is hardware (a return-protection pump or valve). If your boiler is a **condensing** boiler, or its manual allows a colder return, you may use a lower number. **Check your own boiler's manual.**
 - **Why a `cutoff`?** To not burn fuel on mild days. The room thermostat already stops the boiler when the house is warm, so the cutoff is only a second safety. **Do not set it too low**: if the cutoff is lower than the outdoor temperature on a day when you still want heat, the target becomes `0` and the boiler will **not start at all**, whatever the thermostat asks. (This happened to me with 17 °C when it was 18.4 °C outside, so I went back to 22 °C.)
 - **Why `max_water` = 70 °C?** A normal limit for radiators with an old boiler. Do not go higher without checking your boiler.
+- **Why `max_uf` = 40 °C?** Underfloor heating normally works with much cooler water than radiators. The right limit depends on the floor (for example screed or wood) and on the instructions of the manufacturer, and it is often somewhere between 35 and 45 °C. 40 °C is a cautious starting value, **not a rule for every floor**. Ask the person who installed your floor, and write that number in `max_uf` and in the card (`underfloor_max_temp`). The two numbers must be equal.
 - **Why `shift`?** So that when you raise the thermostat (you want 24 °C instead of 21 °C) the boiler gives hotter water and the house warms faster.
 
 ## 3. The relay 6 automation (switching the boiler on and off)
@@ -164,7 +201,8 @@ A very good tool: in Home Assistant open the **History** page and put together `
    - `sensor.YOUR_OUTDOOR_TEMPERATURE` → your outdoor temperature sensor.
 4. Check the file: **Developer tools → YAML → Check configuration**.
 5. Restart Home Assistant: **Settings → System →** power icon (top right) **→ Restart Home Assistant**.
-6. After the restart look in **Developer tools → States**: you should see `sensor.hestia_target_temperature`, `binary_sensor.hestia_heating_demand` and `input_boolean.hestia_turbo`.
+   - If you have **only radiators**, you can leave `input_boolean.hestia_underfloor` out. If you have **only underfloor heating**, set `underfloor_only` to `true` in the sensor.
+6. After the restart look in **Developer tools → States**: you should see `sensor.hestia_target_temperature`, `binary_sensor.hestia_heating_demand`, `input_boolean.hestia_turbo` and (if you use it) `input_boolean.hestia_underfloor`.
 
 The same text is in [`examples/1-configuration.yaml`](../examples/1-configuration.yaml):
 
@@ -184,11 +222,17 @@ The same text is in [`examples/1-configuration.yaml`](../examples/1-configuratio
 #  do NOT paste a second one - add the items below under the existing key.
 # ======================================================================
 
-# ---- 1) A switch for the Turbo button of the card --------------------
+# ---- 1) Helpers: the Turbo button and the radiators / underfloor choice ----
 input_boolean:
   hestia_turbo:
     name: Boiler Turbo (hot-water tank)
     icon: mdi:rocket-launch
+  # Only if you have BOTH radiators and underfloor heating: remembers which circuit is open.
+  # ON = underfloor, OFF = radiators.  Use it as  underfloor_entity  in the card, and the
+  # compensation sensor below reads it to choose the right curve.
+  hestia_underfloor:
+    name: Boiler underfloor selected
+    icon: mdi:heating-coil
 
 # ---- 2) Two helper entities (template) --------------------------------
 template:
@@ -212,35 +256,51 @@ template:
   # 2b) The compensation: "how hot should the boiler water be right now?"
   #     -> use it as  target_temp  in the card, and in the relay-6 automation.
   #     0 means "do not heat".   Read docs/COMPENSATION.md to understand and tune it.
+  #     TWO curves: one for radiators and one (much cooler) for underfloor heating.
+  #     The underfloor curve is used when  input_boolean.hestia_underfloor  is ON.
   - sensor:
       - name: "Hestia Target Temperature"
         unique_id: hestia_target_temperature
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
-          {# ---------- numbers you can change (see docs/COMPENSATION.md) ---------- #}
+          {# ================= RADIATOR curve (see docs/COMPENSATION.md) ================= #}
           {% set base      = 75   %}  {# water temperature when it is 0 °C outside, before the room setpoint shift #}
           {% set slope     = 2.0  %}  {# °C of water for every 1 °C colder outside (the "heating curve") #}
           {% set shift     = 3.0  %}  {# °C of water for every 1 °C the room setpoint is above 21 °C #}
           {% set min_water = 55   %}  {# never ask for less than this when heating (protects a simple boiler) #}
           {% set max_water = 70   %}  {# never ask for more than this #}
+          {# ============ UNDERFLOOR curve - TEST VALUES, NOT TESTED IN A REAL HOUSE ============ #}
+          {% set base_uf   = 40   %}  {# water temperature when it is 0 °C outside #}
+          {% set slope_uf  = 0.8  %}  {# °C of water for every 1 °C colder outside #}
+          {% set shift_uf  = 1.0  %}  {# °C of water for every 1 °C the room setpoint is above 21 °C #}
+          {% set min_uf    = 30   %}  {# never ask for less than this when heating #}
+          {% set max_uf    = 40   %}  {# NEVER ask for more than this. Ask your floor installer for the right value #}
+          {# =================================== common =================================== #}
           {% set cutoff    = 22.0 %}  {# at or above this outdoor temperature no heating is requested #}
-          {# ------------------------------------------------------------------------ #}
+          {% set underfloor_only = false %}  {# true ONLY if you have underfloor heating and NO radiators #}
+          {# ============================================================================== #}
           {# { put your outdoor temperature sensor here } #}
           {% set t_out = states('sensor.YOUR_OUTDOOR_TEMPERATURE') | float(15) %}
           {# { put your room thermostat (climate) here } #}
           {% set t_set = state_attr('climate.YOUR_ROOM_THERMOSTAT', 'temperature') | float(21.0) %}
-          {% set target = (base - (t_out * slope)) + ((t_set - 21.0) * shift) %}
+          {% set uf = underfloor_only or is_state('input_boolean.hestia_underfloor', 'on') %}
+          {% set b   = base_uf  if uf else base      %}
+          {% set sl  = slope_uf if uf else slope     %}
+          {% set sh  = shift_uf if uf else shift     %}
+          {% set lo  = min_uf   if uf else min_water %}
+          {% set hi  = max_uf   if uf else max_water %}
+          {% set target = (b - (t_out * sl)) + ((t_set - 21.0) * sh) %}
           {% if is_state('input_boolean.hestia_turbo', 'on') %}
             {{ max_water }}
           {% elif is_state('binary_sensor.hestia_heating_demand', 'off') %}
             0
           {% elif t_out >= cutoff %}
             0
-          {% elif target > max_water %}
-            {{ max_water }}
-          {% elif target < min_water %}
-            {{ min_water }}
+          {% elif target > hi %}
+            {{ hi }}
+          {% elif target < lo %}
+            {{ lo }}
           {% else %}
             {{ target | round(1) }}
           {% endif %}
@@ -458,11 +518,21 @@ This is how it is done in my installation. **Wiring a boiler must be done by a q
 
 ## 9. Underfloor heating
 
-Underfloor heating needs **much cooler water** (about 35-40 °C) than radiators (55-70 °C). The compensation in this page asks for **at least 55 °C**, so the underfloor circuit must **never** be connected directly to this water.
+Underfloor heating needs **much cooler water** (about 35-40 °C, depending on the floor) than radiators (55-70 °C). That is why the compensation has **two curves**:
 
-- The **card** blocks the underfloor button when the supply water is above `underfloor_max_temp` (40 °C). This is only a **help in the picture**.
+- When the **radiators** are open, the sensor asks for 55-70 °C.
+- When the **underfloor** is open, the sensor asks for 30-40 °C, and **never more than `max_uf`**.
+
+How it chooses: the card has the two buttons **RADIATORS** and **UNDERFLOOR**. Give the card an `underfloor_entity` (the `input_boolean.hestia_underfloor` helper from `examples/1-configuration.yaml`). The buttons then switch this helper (**ON = underfloor, OFF = radiators**) and the compensation sensor reads the same helper. If you leave `underfloor_entity` out, the card remembers the choice only in the browser, and **the sensor cannot see it**, so it will use the radiator curve. If you have both circuits, always use the helper.
+
+Keep the **card limit** `underfloor_max_temp` (default 40) **equal** to `max_uf` in the sensor.
+
+- The **card** blocks the underfloor button when the supply water is above `underfloor_max_temp`. This is only a **help in the picture**.
 - The real protection must be **hardware**: a **mixing valve** (or a 3-way mixing valve with its own thermostat) and a **safety thermostat** that stops the underfloor pump when the water is too hot.
-- If you have **only underfloor heating**, use a lower curve: for example `min_water` 30, `max_water` 40, `base` 40, `slope` 0.8 - and check the numbers with the manual of your floor. These values are only an idea; I did not test them. The `min_water` that protects a simple boiler (section 2) applies to the boiler, so you may need a **return-protection valve** in that case.
+- The underfloor numbers are **test values that I did not try in a real house**. Watch your floor for a few days and change them one at a time.
+- **Simple (non-condensing) boiler:** with such cool water the return water can be below the safe limit of the boiler (see section 2). You may need a **return-protection valve** or pump. Check your boiler manual.
+- If you have **only underfloor heating**, set `underfloor_only: true` in the sensor.
+- **Switching circuits while water is hot.** If you press UNDERFLOOR when the supply water is still hot from the radiators, the card refuses (above the limit) until the water has cooled down. This is on purpose.
 
 ## 10. Frequently asked questions
 
@@ -480,6 +550,9 @@ Only if you have a relay 7 wired in parallel and a hot-water tank on the boiler.
 
 **Can I use a different set of numbers for summer and winter?**
 Yes - change the numbers in the template sensor. A simple way is to raise `cutoff` in autumn and lower it in spring.
+
+**I raised the thermostat to 30 °C and the water went to 70 °C with the underfloor open.**
+In the first version of these examples there was only one curve. Use the examples of this version: the sensor chooses the underfloor curve when `input_boolean.hestia_underfloor` is ON and never asks for more than `max_uf`. Check that the card has the same helper as `underfloor_entity`.
 
 **The card shows no target.**
 Set `target_temp` to `sensor.hestia_target_temperature` in the card.
