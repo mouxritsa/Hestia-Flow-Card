@@ -13,11 +13,17 @@
 #  do NOT paste a second one - add the items below under the existing key.
 # ======================================================================
 
-# ---- 1) A switch for the Turbo button of the card --------------------
+# ---- 1) Helpers: the Turbo button and the radiators / underfloor choice ----
 input_boolean:
   hestia_turbo:
     name: Boiler Turbo (hot-water tank)
     icon: mdi:rocket-launch
+  # Only if you have BOTH radiators and underfloor heating: remembers which circuit is open.
+  # ON = underfloor, OFF = radiators.  Use it as  underfloor_entity  in the card, and the
+  # compensation sensor below reads it to choose the right curve.
+  hestia_underfloor:
+    name: Boiler underfloor selected
+    icon: mdi:heating-coil
 
 # ---- 2) Two helper entities (template) --------------------------------
 template:
@@ -41,35 +47,53 @@ template:
   # 2b) The compensation: "how hot should the boiler water be right now?"
   #     -> use it as  target_temp  in the card, and in the relay-6 automation.
   #     0 means "do not heat".   Read docs/COMPENSATION.md to understand and tune it.
+  #     TWO curves: one for radiators and one (much cooler) for underfloor heating.
+  #     The underfloor curve is used when  input_boolean.hestia_underfloor  is ON.
   - sensor:
       - name: "Hestia Target Temperature"
         unique_id: hestia_target_temperature
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
-          {# ---------- numbers you can change (see docs/COMPENSATION.md) ---------- #}
+          {# ================= RADIATOR curve (see docs/COMPENSATION.md) ================= #}
           {% set base      = 75   %}  {# water temperature when it is 0 °C outside, before the room setpoint shift #}
           {% set slope     = 2.0  %}  {# °C of water for every 1 °C colder outside (the "heating curve") #}
           {% set shift     = 3.0  %}  {# °C of water for every 1 °C the room setpoint is above 21 °C #}
           {% set min_water = 55   %}  {# never ask for less than this when heating (protects a simple boiler) #}
           {% set max_water = 70   %}  {# never ask for more than this #}
+          {# ============ UNDERFLOOR curve - TEST VALUES, NOT TESTED IN A REAL HOUSE ============ #}
+          {% set base_uf   = 40   %}  {# water temperature when it is 0 °C outside #}
+          {% set slope_uf  = 0.8  %}  {# °C of water for every 1 °C colder outside #}
+          {% set shift_uf  = 1.0  %}  {# °C of water for every 1 °C the room setpoint is above 21 °C #}
+          {% set min_uf    = 30   %}  {# never ask for less than this when heating #}
+          {% set max_uf    = 40   %}  {# NEVER ask for more than this. Ask your floor installer for the right value #}
+          {# =================================== common =================================== #}
           {% set cutoff    = 22.0 %}  {# at or above this outdoor temperature no heating is requested #}
-          {# ------------------------------------------------------------------------ #}
+          {% set underfloor_only = false %}  {# true ONLY if you have underfloor heating and NO radiators #}
+          {# ============================================================================== #}
           {# { put your outdoor temperature sensor here } #}
           {% set t_out = states('sensor.YOUR_OUTDOOR_TEMPERATURE') | float(15) %}
           {# { put your room thermostat (climate) here } #}
           {% set t_set = state_attr('climate.YOUR_ROOM_THERMOSTAT', 'temperature') | float(21.0) %}
-          {% set target = (base - (t_out * slope)) + ((t_set - 21.0) * shift) %}
+          {% set uf = underfloor_only or is_state('input_boolean.hestia_underfloor', 'on') %}
+          {% set b   = base_uf  if uf else base      %}
+          {% set sl  = slope_uf if uf else slope     %}
+          {% set sh  = shift_uf if uf else shift     %}
+          {% set lo  = min_uf   if uf else min_water %}
+          {% set hi  = max_uf   if uf else max_water %}
+          {% set target = (b - (t_out * sl)) + ((t_set - 21.0) * sh) %}
           {% if is_state('input_boolean.hestia_turbo', 'on') %}
             {{ max_water }}
           {% elif is_state('binary_sensor.hestia_heating_demand', 'off') %}
             0
           {% elif t_out >= cutoff %}
             0
-          {% elif target > max_water %}
-            {{ max_water }}
-          {% elif target < min_water %}
-            {{ min_water }}
+          {% elif target > hi %}
+            {{ hi }}
+          {% elif target < lo %}
+            {{ lo }}
           {% else %}
+            {{ target | round(1) }}
+          {% endif %}
             {{ target | round(1) }}
           {% endif %}
