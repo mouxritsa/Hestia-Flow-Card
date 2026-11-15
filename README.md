@@ -3,7 +3,7 @@
 ### Hi there 👋🥰 I'm Mouxritsa
 
 - 🏠 **My Project:** [Hestia Flow Card](https://github.com/mouxritsa/hestia-flow-card) - A full-screen animated flow card for heating boilers in Home Assistant.
-- 📺 Watch My Videos: [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=iS6UVJojQxU&list=PLt91vR2Dv3ug24CX7KjUwkkw79S9eRfip)
+- 📺 Watch My Videos: [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@mouxritsa)
 - ☕ Support my work: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mouxritsa)
 
 ### Heating Mode
@@ -17,11 +17,11 @@
 
 > ### ⚠️ This is my first attempt
 
-This is the first card I have ever made, so it is version 0.0.1. It works on my own boiler room, but your installation is different from mine, so something may not work for you. Please open an Issue on GitHub and tell me what happened - I will try to fix it in future versions.
+This is the first card I have ever made, so it is version 0.0.1. It works on my own boiler room, but your installation is different from mine, so something may not work for you. 
+Please open an Issue on GitHub and tell me what happened 
+I will try to fix it in future versions.
 
 Made by [Mouxritsa](https://www.youtube.com/@mouxritsa) together with [Claude](https://claude.ai/login) (the AI assistant of Anthropic).
-
-
 
 ---
 
@@ -73,7 +73,7 @@ The 3-way valves in the picture are **virtual** by default (just a drawing). If 
 This is a hobby project, made for my own house and shared "as is", **without any warranty** (see the [LICENSE](LICENSE)). You use it at your own risk.
 
 - **A card and an automation are not a safety device.** Your boiler must always have its own safety equipment (safety thermostat, pressure valve, etc.). Wiring relays to a boiler should be done by a qualified person.
-- **Underfloor heating and hot water:** underfloor heating is normally limited to about 40 °C. Water at 60 °C in the floor can damage it. The card refuses to switch to underfloor heating when the supply water is above `underfloor_max_temp` (default 40 °C), **but this is only a software help**. The real protection must be **hardware**: a mixing valve and a safety thermostat on the underfloor circuit.
+- **Underfloor heating and hot water:** underfloor heating is normally limited to about 40 °C (the exact number depends on your floor, ask your installer). Water at 60 °C in the floor can damage it. The card refuses to switch to underfloor heating when the supply water is above `underfloor_max_temp` (default 40 °C), and the example compensation uses a **separate, cooler curve** for the underfloor that never asks for more than `max_uf`. **But both are only software help**. The real protection must be **hardware**: a mixing valve and a safety thermostat on the underfloor circuit.
 - **Simple (non-condensing) oil or gas boilers** can be damaged when the **return water is too cold** (below about 45-50 °C), because acid forms inside the boiler. Check the manual or the plate of your boiler for its minimum return temperature. This is why the compensation example asks for at least 55 °C when it heats. Read [`docs/COMPENSATION.md`](docs/COMPENSATION.md).
 - **Turbo** (relay 7, wired in parallel with the thermostat) forces the boiler to burn without asking the thermostat. The example automation allows Turbo only when the house is not asking for heat, and stops it above 70 °C, when the sensor is lost, and after 60 minutes. Do not remove these safety stops.
 
@@ -165,8 +165,8 @@ All entities are chosen from lists in the visual editor. In YAML the names are:
 | `has_underfloor` | true / false | `false` | Draw underfloor heating |
 | `has_triodos` | true / false | `false` | ("triodos" is the Greek word for a 3-way valve) Draw 3-way valve 1 (radiators / hot-water tank). Needs radiators and the hot-water tank |
 | `has_triodos_uf` | true / false | `false` | Draw 3-way valve 2 (underfloor). Needs underfloor heating |
-| `underfloor_entity` | `input_boolean` or `switch` | - | Optional: remembers the choice of the radiators / underfloor buttons in Home Assistant. **ON = underfloor, OFF = radiators**. Without it the card remembers the choice in the browser. You can use it in your own automation to move a real valve |
-| `underfloor_max_temp` | number (°C) | `40` | The highest supply water temperature that may go to the underfloor. Above it the underfloor button is blocked and shows a message |
+| `underfloor_entity` | `input_boolean` or `switch` | - | Remembers the choice of the radiators / underfloor buttons in Home Assistant. **ON = underfloor, OFF = radiators**. **If you have both circuits, use it**: the example compensation reads the same helper (`input_boolean.hestia_underfloor`) to choose the radiator or the underfloor curve. Without it the card remembers the choice only in the browser. You can also use it in your own automation to move a real valve |
+| `underfloor_max_temp` | number (°C) | `40` | The highest supply water temperature that may go to the underfloor. Above it the underfloor button is blocked and shows a message. Keep it equal to `max_uf` of the compensation sensor |
 | `triodos_entity` | `binary_sensor`, `switch`, `input_boolean` or `sensor` | - | Optional: a real sensor of 3-way valve 1. **ON = radiators, OFF = hot-water tank**. Without it the valve is virtual |
 | `triodos_uf_entity` | `binary_sensor`, `switch`, `input_boolean` or `sensor` | - | Optional: a real sensor of 3-way valve 2. **ON = underfloor open**. Without it the valve is virtual |
 | `circulator_entity` | `switch`, `input_boolean` or `binary_sensor` | - | Optional: the real circulator pump. Without it the pump is drawn spinning when the supply water is **40 °C or more** (and stops below 38 °C) |
@@ -202,3 +202,4 @@ If you still have a problem, open an **Issue** and write: what you see, your Hom
 
 - First attempt, made by **Mouxritsa** together with **Claude** (AI assistant of Anthropic).
 - License: [MIT](LICENSE) - free to use and change, **without any warranty**.
+
