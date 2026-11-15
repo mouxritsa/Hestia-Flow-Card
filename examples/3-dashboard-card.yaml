@@ -30,9 +30,12 @@ has_underfloor: false
 has_triodos: false             # draw 3-way valve 1 (virtual)
 has_triodos_uf: false          # draw 3-way valve 2 (virtual)
 # --- optional extras (delete the lines you do not use) ---
-# underfloor_entity: input_boolean.YOUR_UNDERFLOOR_SWITCH
+# If you have BOTH radiators and underfloor heating, use these two lines (the helper is made in
+# examples/1-configuration.yaml). Keep underfloor_max_temp EQUAL to  max_uf  of the compensation sensor.
+# underfloor_entity: input_boolean.hestia_underfloor
 # underfloor_max_temp: 40
 # triodos_entity: switch.YOUR_3WAY_VALVE_1
 # triodos_uf_entity: switch.YOUR_3WAY_VALVE_2
 # circulator_entity: switch.YOUR_CIRCULATOR_PUMP
 # neon_text: YOUR NAME
+
