@@ -95,5 +95,3 @@ template:
           {% else %}
             {{ target | round(1) }}
           {% endif %}
-            {{ target | round(1) }}
-          {% endif %}
