@@ -1,34 +1,22 @@
-# hestia-flow-card
+# Hestia Flow Card
 
-### Hi there 👋🥰 I'm Mouxritsa
+**Version v0.0.2** · A full-screen, animated flow card for a **heating boiler** in Home Assistant.
 
-- 🏠 **My Project:** [Hestia Flow Card](https://github.com/mouxritsa/hestia-flow-card) - A full-screen animated flow card for heating boilers in Home Assistant.
-- 📺 Watch My Videos: [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/GHRnvWqrUoY) GR Hestia Flow Card
-- ☕ Support my work: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mouxritsa)
+<p align="center">
+  <img src="docs/preview-heating.gif" alt="Heating: boiler burning, hot water going to the radiators" width="48%">
+  <img src="docs/preview-turbo.gif" alt="Turbo: hot-water tank, radiators and underfloor heating" width="48%">
+</p>
 
-- ## ESP32 code
-
-The relays (boiler enable and Turbo) are driven by an ESP32 over MQTT.
-Arduino code: https://pastebin.com/308g8yrZ
-
-Put your own WiFi, MQTT and OTA details in the first lines. If WiFi or MQTT is lost for more than 2 minutes, the ESP turns relays 6 and 7 off by itself.
-
-### Heating Mode
-![Heating Preview](docs/preview-heating.gif)
-
-### Turbo Mode
-![Turbo Preview](docs/preview-turbo.gif)
-
-**Version v0.0.1** · 🇬🇷 🇩🇪 🇬🇧
-### A full-screen, animated flow card for a **heating boiler** in Home Assistant.
+<p align="center">
+  <img src="docs/preview-weather.gif" alt="Animated weather in the outdoor temperature box" width="52%">
+</p>
 
 > ### ⚠️ This is my first attempt
-
-This is the first card I have ever made, so it is version 0.0.1. It works on my own boiler room, but your installation is different from mine, so something may not work for you. 
-Please open an Issue on GitHub and tell me what happened 
-I will try to fix it in future versions.
-
-Made by [Mouxritsa]([https://www.youtube.com/@mouxritsa](https://youtu.be/GHRnvWqrUoY)) together with [Claude](https://claude.ai/login) (the AI assistant of Anthropic).
+> This is the **first card I have ever made** (it started as version 0.0.1).
+> It works on my own boiler room, but your installation is different from mine, so something may not work for you.
+> Please open an **Issue** on GitHub and tell me what happened - I will try to fix it in future versions.
+>
+> Made by **Mouxritsa** together with **Claude** (the AI assistant of Anthropic).
 
 ---
 
@@ -43,8 +31,10 @@ Made by [Mouxritsa]([https://www.youtube.com/@mouxritsa](https://youtu.be/GHRnvW
 7. [What to add to Home Assistant (configuration.yaml and automations.yaml)](#what-to-add-to-home-assistant)
 8. [All options of the card](#all-options-of-the-card)
 9. [How the card behaves](#how-the-card-behaves)
-10. [Troubleshooting](#troubleshooting)
-11. [Credits and license](#credits-and-license)
+10. [Weather](#weather)
+11. [Troubleshooting](#troubleshooting)
+12. [Changelog](#changelog)
+13. [Credits and license](#credits-and-license)
 
 ---
 
@@ -53,7 +43,7 @@ Made by [Mouxritsa]([https://www.youtube.com/@mouxritsa](https://youtu.be/GHRnvW
 The card draws your boiler room as a live picture:
 
 - **The boiler** with a flame, the **supply** (outlet) and **return** (inlet) water temperatures and, optionally, the temperature of the boiler body.
-- The **outdoor temperature**.
+- The **outdoor temperature**, with the **current weather** drawn as a small **animated picture** (sun, clouds, rain, snow, fog, wind, thunderstorm, moon at night). The weather is found **automatically for your location** - see [Weather](#weather).
 - The **pipes** with moving water: red when hot water goes out, blue when it comes back.
 - The **circulator pump**, which is drawn spinning only when the supply water is hot enough.
 - Optional: **radiators**, a **hot-water tank**, **underfloor heating**, and one or two **3-way valves** (real or virtual).
@@ -80,7 +70,7 @@ The 3-way valves in the picture are **virtual** by default (just a drawing). If 
 This is a hobby project, made for my own house and shared "as is", **without any warranty** (see the [LICENSE](LICENSE)). You use it at your own risk.
 
 - **A card and an automation are not a safety device.** Your boiler must always have its own safety equipment (safety thermostat, pressure valve, etc.). Wiring relays to a boiler should be done by a qualified person.
-- **Underfloor heating and hot water:** underfloor heating is normally limited to about 40 °C (the exact number depends on your floor, ask your installer). Water at 60 °C in the floor can damage it. The card refuses to switch to underfloor heating when the supply water is above `underfloor_max_temp` (default 40 °C), and the example compensation uses a **separate, cooler curve** for the underfloor that never asks for more than `max_uf`. **But both are only software help**. The real protection must be **hardware**: a mixing valve and a safety thermostat on the underfloor circuit.
+- **Underfloor heating and hot water:** underfloor heating is normally limited to about 40 °C. Water at 60 °C in the floor can damage it. The card refuses to switch to underfloor heating when the supply water is above `underfloor_max_temp` (default 40 °C), **but this is only a software help**. The real protection must be **hardware**: a mixing valve and a safety thermostat on the underfloor circuit.
 - **Simple (non-condensing) oil or gas boilers** can be damaged when the **return water is too cold** (below about 45-50 °C), because acid forms inside the boiler. Check the manual or the plate of your boiler for its minimum return temperature. This is why the compensation example asks for at least 55 °C when it heats. Read [`docs/COMPENSATION.md`](docs/COMPENSATION.md).
 - **Turbo** (relay 7, wired in parallel with the thermostat) forces the boiler to burn without asking the thermostat. The example automation allows Turbo only when the house is not asking for heat, and stops it above 70 °C, when the sensor is lost, and after 60 minutes. Do not remove these safety stops.
 
@@ -108,14 +98,18 @@ Your sensors can have any names. In this guide, **`{ put your ... here }`** or *
 ### Option A - HACS (recommended)
 
 1. In Home Assistant open **HACS**.
-2. Click the three dots **⋮** (top right) → **Custom repositories**.
-3. In *Repository* paste the address of this repository: `https://github.com/mouxritsa/hestia-flow-card` (replace `mouxritsa` with the real GitHub name of the owner of this repository - copy the address from your browser)
-4. In *Type* choose **Dashboard** (in old HACS versions it is called **Lovelace**). Click **Add**.
-5. Find **Hestia Flow Card** in the list and click **Download**.
-6. Refresh the browser with **Ctrl+F5** (on a phone: close and open the app).
+2. Search for **Hestia Flow Card** and open it.
+3. Click **Download**.
+4. Refresh the browser with **Ctrl+F5** (on a phone: close and open the app).
 
-> Once the card is in the default HACS store, steps 2-4 are not needed: just search for "Hestia Flow Card".
 > HACS adds the resource automatically if your dashboards are in the normal (UI) mode. If you use dashboards in YAML mode, add the resource yourself: URL `/hacsfiles/hestia-flow-card/hestia-flow-card.js`, type *JavaScript module*.
+
+**If you do not find it in the search** (for example while the card is not yet in the default HACS list), add it as a custom repository:
+
+1. In HACS click the three dots **⋮** (top right) → **Custom repositories**.
+2. In *Repository* paste `https://github.com/mouxritsa/hestia-flow-card`.
+3. In *Type* choose **Dashboard** (in old HACS versions it is called **Lovelace**). Click **Add**.
+4. Find **Hestia Flow Card** in the list, click **Download** and refresh the browser with **Ctrl+F5**.
 
 ### Option B - manual
 
@@ -157,6 +151,8 @@ All entities are chosen from lists in the visual editor. In YAML the names are:
 |---|---|---|---|
 | `name` | text | `Boiler` (in your language) | Title written on the boiler |
 | `outdoor_temp` | `sensor` | - | Outdoor temperature |
+| `weather_entity` | `weather` | automatic | Optional: the weather entity to draw. If you leave it empty the card uses the weather of **your home location** (see [Weather](#weather)) |
+| `show_weather` | true / false | `true` | `false` = never show the weather (a thermometer is drawn instead) |
 | `supply_temp` | `sensor` | - | Boiler **supply / outlet** water temperature (the hot water leaving the boiler) |
 | `return_temp` | `sensor` | - | Boiler **return / inlet** water temperature (the water coming back) |
 | `boiler_temp` | `sensor` | - | Optional: temperature of the boiler body |
@@ -172,8 +168,8 @@ All entities are chosen from lists in the visual editor. In YAML the names are:
 | `has_underfloor` | true / false | `false` | Draw underfloor heating |
 | `has_triodos` | true / false | `false` | ("triodos" is the Greek word for a 3-way valve) Draw 3-way valve 1 (radiators / hot-water tank). Needs radiators and the hot-water tank |
 | `has_triodos_uf` | true / false | `false` | Draw 3-way valve 2 (underfloor). Needs underfloor heating |
-| `underfloor_entity` | `input_boolean` or `switch` | - | Remembers the choice of the radiators / underfloor buttons in Home Assistant. **ON = underfloor, OFF = radiators**. **If you have both circuits, use it**: the example compensation reads the same helper (`input_boolean.hestia_underfloor`) to choose the radiator or the underfloor curve. Without it the card remembers the choice only in the browser. You can also use it in your own automation to move a real valve |
-| `underfloor_max_temp` | number (°C) | `40` | The highest supply water temperature that may go to the underfloor. Above it the underfloor button is blocked and shows a message. Keep it equal to `max_uf` of the compensation sensor |
+| `underfloor_entity` | `input_boolean` or `switch` | - | Optional: remembers the choice of the radiators / underfloor buttons in Home Assistant. **ON = underfloor, OFF = radiators**. Without it the card remembers the choice in the browser. You can use it in your own automation to move a real valve |
+| `underfloor_max_temp` | number (°C) | `40` | The highest supply water temperature that may go to the underfloor. Above it the underfloor button is blocked and shows a message |
 | `triodos_entity` | `binary_sensor`, `switch`, `input_boolean` or `sensor` | - | Optional: a real sensor of 3-way valve 1. **ON = radiators, OFF = hot-water tank**. Without it the valve is virtual |
 | `triodos_uf_entity` | `binary_sensor`, `switch`, `input_boolean` or `sensor` | - | Optional: a real sensor of 3-way valve 2. **ON = underfloor open**. Without it the valve is virtual |
 | `circulator_entity` | `switch`, `input_boolean` or `binary_sensor` | - | Optional: the real circulator pump. Without it the pump is drawn spinning when the supply water is **40 °C or more** (and stops below 38 °C) |
@@ -190,6 +186,16 @@ All entities are chosen from lists in the visual editor. In YAML the names are:
 - **Turbo button.** It toggles `turbo_entity`. Your automation (see `examples/2-automations.yaml`) then switches relay 7 and also protects you with the limits.
 - **Thermostat buttons.** They change the set temperature of `climate_entity` in 0.5 °C steps within the limits of that thermostat.
 
+## Weather
+
+The weather appears **inside the outdoor-temperature box** (top left) as a small animated picture, with its name below the temperature. The number is still **your own outdoor sensor** (`outdoor_temp`).
+
+- **Automatic for your region.** The card does not call any website and needs no key. It reads a `weather` entity of your Home Assistant. During the first setup Home Assistant normally creates one for **your home location** (for example `weather.home` or `weather.forecast_home`). The card uses `weather.home` if it exists, otherwise the first `weather` entity it finds. To change the location go to *Settings → System → General* in Home Assistant.
+- **Another weather source?** Choose it in the card editor (**Weather**) or write `weather_entity: weather.your_entity`.
+- **Night.** If the entity `sun.sun` exists (it does in a normal Home Assistant), the picture shows the **moon** after sunset.
+- **No weather entity?** Then nothing changes: the card shows the thermometer, exactly as in version 0.0.1. `show_weather: false` does the same.
+- **Pictures:** sunny, clear night, partly cloudy, cloudy, rainy, heavy rain, snowy, sleet, fog, hail, thunderstorm, thunderstorm with rain, windy, windy and cloudy, exceptional. The names are in Greek, English or German like the rest of the card.
+
 ## Troubleshooting
 
 | Problem | What to do |
@@ -205,8 +211,12 @@ All entities are chosen from lists in the visual editor. In YAML the names are:
 
 If you still have a problem, open an **Issue** and write: what you see, your Home Assistant version, and the YAML of the card.
 
+## Changelog
+
+- **v0.0.2** - animated **weather** in the outdoor-temperature box, found automatically for your location (`weather_entity`, `show_weather`). Security fix: the card title and the neon text are now escaped before they are drawn.
+- **v0.0.1** - first version.
+
 ## Credits and license
 
 - First attempt, made by **Mouxritsa** together with **Claude** (AI assistant of Anthropic).
 - License: [MIT](LICENSE) - free to use and change, **without any warranty**.
-

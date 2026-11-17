@@ -1,5 +1,5 @@
 /*
- * Hestia Flow Card  v0.0.1
+ * Hestia Flow Card  v0.0.2
  * A full-screen animated flow card for a heating boiler in Home Assistant.
  *
  * This is my FIRST attempt at a Home Assistant card - please be kind and
@@ -48,6 +48,8 @@
  *  triodos_entity: switch.xxx        # { optional: real sensor/switch of 3-way valve 1 (on = radiators, off = hot-water tank). Without it the valve is virtual }
  *  triodos_uf_entity: switch.xxx     # { optional: real sensor/switch of 3-way valve 2 (on = underfloor open). Without it the valve is virtual }
  *  circulator_entity: switch.xxx     # { optional: your circulator pump switch. Without it the pump is drawn spinning when supply >= 40 °C }
+ *  weather_entity: weather.xxx       # { optional: weather entity. Without it the card uses the first weather.* entity of your Home Assistant, i.e. the weather of YOUR home location }
+ *  show_weather: true                # false = never show the weather (the thermometer is drawn instead)
  *  neon_text: My Name                # { your own name in neon letters; empty = hidden; not set = "By Mouxritsa" }
  * ======================================================================
  */
@@ -98,6 +100,23 @@ const LFC_TR = {
     askOn: "Να ανάψει το Turbo του θερμοσίφωνα;",
     cardName: "Κάρτα ροής λέβητα",
     cardDesc: "Λέβητας, boiler, σώματα, ενδοδάπεδα, τρίοδοι και Turbo με επιβεβαίωση",
+    wx: {
+      "sunny": "ΑΙΘΡΙΟΣ",
+      "clear-night": "ΚΑΘΑΡΗ ΝΥΧΤΑ",
+      "partlycloudy": "ΜΕΡΙΚΩΣ ΣΥΝΝΕΦΙΑ",
+      "cloudy": "ΣΥΝΝΕΦΙΑ",
+      "rainy": "ΒΡΟΧΗ",
+      "pouring": "ΚΑΤΑΙΓΙΔΑ",
+      "snowy": "ΧΙΟΝΙ",
+      "snowy-rainy": "ΧΙΟΝΟΒΡΟΧΗ",
+      "fog": "ΟΜΙΧΛΗ",
+      "hail": "ΧΑΛΑΖΙ",
+      "lightning": "ΚΕΡΑΥΝΟΙ",
+      "lightning-rainy": "ΒΡΟΧΗ ΚΑΙ ΚΕΡΑΥΝΟΙ",
+      "windy": "ΑΝΕΜΟΣ",
+      "windy-variant": "ΑΝΕΜΟΣ ΚΑΙ ΣΥΝΝΕΦΑ",
+      "exceptional": "ΕΚΤΑΚΤΟ",
+    },
   },
   en: {
     defaultName: "Boiler",
@@ -144,6 +163,23 @@ const LFC_TR = {
     askOn: "Turn the hot water Turbo on?",
     cardName: "Boiler Flow Card",
     cardDesc: "Heating boiler, hot-water tank, radiators, underfloor, 3-way valves and Turbo with confirmation",
+    wx: {
+      "sunny": "SUNNY",
+      "clear-night": "CLEAR NIGHT",
+      "partlycloudy": "PARTLY CLOUDY",
+      "cloudy": "CLOUDY",
+      "rainy": "RAINY",
+      "pouring": "HEAVY RAIN",
+      "snowy": "SNOWY",
+      "snowy-rainy": "SLEET",
+      "fog": "FOG",
+      "hail": "HAIL",
+      "lightning": "THUNDERSTORM",
+      "lightning-rainy": "STORM WITH RAIN",
+      "windy": "WINDY",
+      "windy-variant": "WINDY AND CLOUDY",
+      "exceptional": "EXCEPTIONAL",
+    },
   },
   de: {
     defaultName: "Heizkessel",
@@ -190,6 +226,23 @@ const LFC_TR = {
     askOn: "Warmwasser-Turbo einschalten?",
     cardName: "Heizkessel-Flusskarte",
     cardDesc: "Heizkessel, Warmwasserspeicher, Heizkörper, Fußbodenheizung, 3-Wege-Ventile und Turbo mit Bestätigung",
+    wx: {
+      "sunny": "SONNIG",
+      "clear-night": "KLARE NACHT",
+      "partlycloudy": "TEILS WOLKIG",
+      "cloudy": "BEWÖLKT",
+      "rainy": "REGEN",
+      "pouring": "STARKREGEN",
+      "snowy": "SCHNEE",
+      "snowy-rainy": "SCHNEEREGEN",
+      "fog": "NEBEL",
+      "hail": "HAGEL",
+      "lightning": "GEWITTER",
+      "lightning-rainy": "GEWITTER MIT REGEN",
+      "windy": "WINDIG",
+      "windy-variant": "WINDIG UND BEWÖLKT",
+      "exceptional": "AUSNAHME",
+    },
   },
 };
 
@@ -218,6 +271,8 @@ const LFC_LABELS = {
     triodos_entity: "Τρίοδος 1 - αισθητήρας/διακόπτης (προαιρετικό: on = σώματα, off = boiler)",
     triodos_uf_entity: "Τρίοδος 2 - αισθητήρας/διακόπτης (προαιρετικό: on = ενδοδάπεδια)",
     neon_text: "Όνομα στο neon (άδειο = κρύβεται)",
+    weather_entity: "Καιρός (weather, προαιρετικό - αλλιώς αυτόματα ο καιρός της περιοχής σου)",
+    show_weather: "Εμφάνιση καιρού",
   },
   en: {
     name: "Title",
@@ -243,6 +298,8 @@ const LFC_LABELS = {
     triodos_entity: "3-way valve 1 sensor/switch (optional: on = radiators, off = boiler)",
     triodos_uf_entity: "3-way valve 2 sensor/switch (optional: on = underfloor)",
     neon_text: "Neon text / your name (empty = hidden)",
+    weather_entity: "Weather (weather entity, optional - otherwise automatic for your location)",
+    show_weather: "Show the weather",
   },
   de: {
     name: "Titel",
@@ -268,6 +325,8 @@ const LFC_LABELS = {
     triodos_entity: "3-Wege-Ventil 1 Sensor/Schalter (optional: an = Heizkörper, aus = Speicher)",
     triodos_uf_entity: "3-Wege-Ventil 2 Sensor/Schalter (optional: an = Fußboden)",
     neon_text: "Neon-Text / dein Name (leer = ausgeblendet)",
+    weather_entity: "Wetter (weather-Entität, optional - sonst automatisch für deinen Standort)",
+    show_weather: "Wetter anzeigen",
   },
 };
 
@@ -283,6 +342,66 @@ function lfcLang(hass) {
   return LFC_TR[l] ? l : "en";
 }
 
+
+// ---------- Καιρός: κινούμενο εικονίδιο (64x64) ----------
+function lfcWxIcon(k, night) {
+  const CL = "#c9d1da", CM = "#98a3af", CD = "#6e7883", ST = "#0b0d10";
+  const cloud = (x, y, sc, fill, cls, delay) =>
+    `<g transform="translate(${x} ${y}) scale(${sc})"><g${cls ? ` class="${cls}"` : ""}${delay ? ` style="animation-delay:${delay}s"` : ""}><path d="M10 30 A9 9 0 0 1 12 12 A13 13 0 0 1 37 8 A10 10 0 0 1 46 30 Z" fill="${fill}" stroke="${ST}" stroke-width="1.6" stroke-linejoin="round"/></g></g>`;
+  const sun = (cx, cy, r) => {
+    let rs = "";
+    for (let i = 0; i < 8; i++) {
+      const a = (i * Math.PI) / 4;
+      rs += `<line x1="${(cx + Math.cos(a) * (r + 3)).toFixed(1)}" y1="${(cy + Math.sin(a) * (r + 3)).toFixed(1)}" x2="${(cx + Math.cos(a) * (r + 7)).toFixed(1)}" y2="${(cy + Math.sin(a) * (r + 7)).toFixed(1)}" stroke="#ffc233" stroke-width="2.6" stroke-linecap="round"/>`;
+    }
+    return `<circle cx="${cx}" cy="${cy}" r="${r + 11}" fill="url(#gGlowY)" class="glow"/><g class="wx-spin">${rs}</g><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#gSun)"/>`;
+  };
+  const moon = (cx, cy, r) =>
+    `<g class="wx-bob"><circle cx="${cx}" cy="${cy}" r="${r + 10}" fill="url(#gGlowM)" class="glow"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f1e7b6"/><circle cx="${cx + r * 0.5}" cy="${cy - r * 0.35}" r="${r * 0.88}" fill="#14171b"/></g>`;
+  const stars = [[8, 10], [54, 12], [48, 52], [9, 46], [30, 6], [57, 32]]
+    .map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="2" fill="#fff" class="wx-tw" style="animation-delay:${(i * 0.37).toFixed(2)}s"/>`)
+    .join("") + `<line x1="54" y1="6" x2="46" y2="11" stroke="#fff" stroke-width="2" stroke-linecap="round" class="wx-shoot"/>`;
+  const drops = (xs, fast) =>
+    xs.map((x, i) => `<line x1="${x}" y1="36" x2="${x - 1.5}" y2="42" stroke="#4fb3ff" stroke-width="2.4" stroke-linecap="round" class="wx-drop${fast ? " fast" : ""}" style="animation-delay:${(i * 0.17).toFixed(2)}s"/>`).join("");
+  const snow = (xs) =>
+    xs.map((x, i) => `<circle cx="${x}" cy="36" r="2.2" fill="#fff" class="wx-snow" style="animation-delay:${(i * 0.6).toFixed(2)}s"/>`).join("");
+  const hail = (xs) =>
+    xs.map((x, i) => `<circle cx="${x}" cy="36" r="2.4" fill="#cfe8ff" stroke="#7fb8e8" stroke-width=".8" class="wx-drop fast" style="animation-delay:${(i * 0.19).toFixed(2)}s"/>`).join("");
+  const bolt = `<path class="wx-flash" d="M31 31 L22 47 L30 47 L26 61 L42 41 L33 41 L38 31 Z" fill="#ffd23a" stroke="#7a5a00" stroke-width="1" stroke-linejoin="round"/>`;
+  const wind = (ds, y0) =>
+    ds.map((d, i) => `<path d="${d}" fill="none" stroke="#9fb3c8" stroke-width="3.2" stroke-linecap="round" class="wx-wind" style="animation-delay:${(i * 0.5).toFixed(2)}s" transform="translate(0 ${y0})"/>`).join("");
+
+  let g = "";
+  switch (k) {
+    case "sunny": g = night ? moon(30, 32, 15) + stars : sun(32, 32, 12); break;
+    case "clear-night": g = moon(30, 32, 15) + stars; break;
+    case "partlycloudy": g = (night ? moon(22, 22, 11) : sun(22, 22, 9)) + cloud(6, 24, 0.95, CL, "wx-drift"); break;
+    case "cloudy": g = cloud(-2, 8, 0.8, CM, "wx-drift r", 0) + cloud(8, 22, 0.95, CL, "wx-drift"); break;
+    case "rainy": g = cloud(7, 4, 0.95, CM) + drops([20, 30, 40], false); break;
+    case "pouring": g = cloud(7, 4, 0.95, CD) + drops([14, 22, 30, 38, 46], true); break;
+    case "snowy": g = cloud(7, 4, 0.95, CM) + snow([17, 27, 37, 46]); break;
+    case "snowy-rainy": g = cloud(7, 4, 0.95, CM) + drops([18, 42], false) + snow([28, 36]); break;
+    case "hail": g = cloud(7, 4, 0.95, CM) + hail([17, 27, 37, 46]); break;
+    case "lightning": g = cloud(7, 2, 0.95, CD) + bolt; break;
+    case "lightning-rainy": g = cloud(7, 2, 0.95, CD) + bolt + drops([16, 47], true); break;
+    case "fog":
+      g = cloud(7, 0, 0.9, CM) +
+        [[8, 52, 38], [14, 38, 44], [6, 46, 50], [18, 40, 56]]
+          .map((l, i) => `<line x1="${l[0]}" y1="${l[2] - 0}" x2="${l[1] + l[0]}" y2="${l[2]}" stroke="#b9c3cd" stroke-width="3" stroke-linecap="round" class="wx-fog" style="animation-delay:${(i * 0.7).toFixed(1)}s"/>`).join("");
+      break;
+    case "windy": g = wind(["M6 18 H40 a6 6 0 1 0 -6 -6", "M10 32 H50 a6 6 0 1 1 -6 6", "M6 46 H34 a5 5 0 1 1 -5 5"], 0); break;
+    case "windy-variant": g = cloud(7, 0, 0.9, CD, "wx-drift") + wind(["M6 36 H40 a5 5 0 1 0 -5 -5", "M10 50 H50 a5 5 0 1 1 -5 5"], 0); break;
+    case "exceptional":
+      g = `<path d="M32 8 L58 54 L6 54 Z" fill="#ff8a5c" stroke="${ST}" stroke-width="2" stroke-linejoin="round" class="wx-tw"/><rect x="30" y="24" width="4" height="16" rx="2" fill="#1a0d06"/><circle cx="32" cy="46" r="2.4" fill="#1a0d06"/>`;
+      break;
+    default: g = "";
+  }
+  return g;
+}
+
+// Ασφάλεια: κάθε κείμενο που έρχεται από τις ρυθμίσεις περνά από εδώ πριν μπει στο σχέδιο
+const lfcEsc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+
 class HestiaFlowCard extends HTMLElement {
   static getConfigForm() {
     const ent = (domain, extra) => ({ entity: Object.assign({ domain: domain }, extra || {}) });
@@ -290,6 +409,8 @@ class HestiaFlowCard extends HTMLElement {
       schema: [
         { name: "name", selector: { text: {} } },
         { name: "outdoor_temp", selector: ent("sensor") },
+        { name: "weather_entity", selector: ent("weather") },
+        { name: "show_weather", selector: { boolean: {} } },
         { name: "supply_temp", selector: ent("sensor") },
         { name: "return_temp", selector: ent("sensor") },
         { name: "boiler_temp", selector: ent("sensor") },
@@ -329,10 +450,12 @@ class HestiaFlowCard extends HTMLElement {
 
   setConfig(config) {
     this._config = Object.assign(
-      { has_radiators: true, has_boiler: true, has_underfloor: false, has_triodos: false, has_triodos_uf: false, underfloor_max_temp: 40, confirm_turbo: true },
+      { has_radiators: true, has_boiler: true, has_underfloor: false, has_triodos: false, has_triodos_uf: false, underfloor_max_temp: 40, confirm_turbo: true, show_weather: true },
       config || {}
     );
     this._sig = null;
+    this._wxAuto = null;
+    this._wxScan = 0;
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     this._render();
   }
@@ -406,6 +529,30 @@ class HestiaFlowCard extends HTMLElement {
     this._sig = null;
     this._render();
   }
+  // Καιρός: το weather_entity της κάρτας, αλλιώς αυτόματα ο καιρός της περιοχής του Home Assistant (weather.home ή η πρώτη weather.*)
+  _wxId() {
+    const c = this._config || {};
+    if (c.show_weather === false || !this._hass) return null;
+    const S = this._hass.states;
+    if (c.weather_entity) return S[c.weather_entity] ? c.weather_entity : null;
+    if (this._wxAuto && S[this._wxAuto]) return this._wxAuto;
+    const now = Date.now();
+    if (this._wxScan && now - this._wxScan < 60000) return null;
+    this._wxScan = now;
+    const ids = Object.keys(S).filter((k) => k.indexOf("weather.") === 0).sort();
+    this._wxAuto = ids.indexOf("weather.home") >= 0 ? "weather.home" : ids.find((k) => /home/.test(k)) || ids[0] || null;
+    return this._wxAuto;
+  }
+  _wx() {
+    const id = this._wxId();
+    if (!id) return null;
+    let st = this._st(id);
+    if (!st || !LFC_TR.en.wx[st]) return null;
+    const sun = this._hass.states["sun.sun"];
+    const night = st === "clear-night" || !!(sun && sun.state === "below_horizon");
+    if (st === "sunny" && night) st = "clear-night";
+    return { key: st, night: night };
+  }
   _fmt(v) {
     return v === null ? "--" : v.toFixed(1) + " °C";
   }
@@ -436,6 +583,7 @@ class HestiaFlowCard extends HTMLElement {
     const tSup = this._num(c.supply_temp);
     const tRet = this._num(c.return_temp);
     const tBoi = this._num(c.boiler_temp);
+    const wx = this._wx();
 
     const cl = c.climate_entity && this._hass.states[c.climate_entity] ? this._hass.states[c.climate_entity].attributes || {} : null;
     const spRaw = cl ? parseFloat(cl.temperature) : NaN;
@@ -448,7 +596,7 @@ class HestiaFlowCard extends HTMLElement {
     const tTarget = this._num(c.target_temp);
     const sp = this._pending != null ? this._pending : spNow;
 
-    const sig = JSON.stringify([ufBlocked, this._st(c.triodos_entity), this._st(c.triodos_uf_entity), selRad, selUf, lang, tTarget, circ, sp, room, c, heating, r6, r7, turbo, radFlow, ufFlow, boilFlow, burning, tOut, tSup, tRet, tBoi]);
+    const sig = JSON.stringify([wx ? wx.key + (wx.night ? "n" : "d") : "", ufBlocked, this._st(c.triodos_entity), this._st(c.triodos_uf_entity), selRad, selUf, lang, tTarget, circ, sp, room, c, heating, r6, r7, turbo, radFlow, ufFlow, boilFlow, burning, tOut, tSup, tRet, tBoi]);
     if (sig === this._sig) return;
     this._sig = sig;
 
@@ -515,7 +663,7 @@ class HestiaFlowCard extends HTMLElement {
       <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="22" fill="url(#gMetal)" stroke="#0b0d10" stroke-width="3"/>
       <rect x="${bx + 6}" y="${by + 6}" width="${bw - 12}" height="${bh - 12}" rx="17" fill="none" stroke="#ffffff18" stroke-width="2"/>
       <rect x="${bx + 70}" y="${by + 16}" width="${bw - 140}" height="34" rx="9" class="plate"/>
-      <text x="${wcx}" y="${by + 40}" text-anchor="middle" class="ttl">${(c.name || L.defaultName).toUpperCase()}</text>
+      <text x="${wcx}" y="${by + 40}" text-anchor="middle" class="ttl">${lfcEsc(String(c.name || L.defaultName).toUpperCase())}</text>
       <circle cx="${wcx}" cy="${wcy}" r="88" fill="#15181c" stroke="#05070a" stroke-width="4"/>
       <circle cx="${wcx}" cy="${wcy}" r="80" fill="url(#gWin)" stroke="${ringCol}" stroke-width="5" ${burning ? 'class="ring"' : ""}/>
       ${flameG}
@@ -630,11 +778,15 @@ class HestiaFlowCard extends HTMLElement {
       <rect x="50" y="20" width="310" height="118" rx="20" fill="url(#gMetal)" stroke="#0b0d10" stroke-width="3"/>
       <rect x="60" y="30" width="290" height="98" rx="14" fill="#14171b" stroke="#ffffff14"/>
       <text x="205" y="54" text-anchor="middle" class="ttl">${L.outdoor}</text>
-      <g transform="translate(95 96)"><rect x="-7" y="-26" width="14" height="38" rx="7" fill="none" stroke="#cfd6de" stroke-width="3"/><circle cy="18" r="11" fill="#ff5a36"/><rect x="-3" y="-8" width="6" height="26" fill="#ff5a36"/></g>
-      <text x="225" y="108" text-anchor="middle" class="big">${t(tOut)}<tspan class="pu"> °C</tspan></text>`;
+      ${wx
+        ? `<g transform="translate(68 62)">${lfcWxIcon(wx.key, wx.night)}</g>
+      <text x="225" y="101" text-anchor="middle" class="big" style="font-size:42px">${t(tOut)}<tspan class="pu"> °C</tspan></text>
+      <text x="225" y="121" text-anchor="middle" class="sub" style="fill:#9fb3c8">${L.wx[wx.key]}</text>`
+        : `<g transform="translate(95 96)"><rect x="-7" y="-26" width="14" height="38" rx="7" fill="none" stroke="#cfd6de" stroke-width="3"/><circle cy="18" r="11" fill="#ff5a36"/><rect x="-3" y="-8" width="6" height="26" fill="#ff5a36"/></g>
+      <text x="225" y="108" text-anchor="middle" class="big">${t(tOut)}<tspan class="pu"> °C</tspan></text>`}`;
 
     // ---------- neon ----------
-    const neonTxt = (c.neon_text === undefined || c.neon_text === null ? "By Mouxritsa" : String(c.neon_text)).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+    const neonTxt = lfcEsc(c.neon_text === undefined || c.neon_text === null ? "By Mouxritsa" : c.neon_text);
     const neon = !neonTxt.trim() ? "" : `
       <g class="neon">
         <text x="540" y="92" text-anchor="middle" class="neon-t" filter="url(#fNeon)">${neonTxt}</text>
@@ -714,6 +866,28 @@ class HestiaFlowCard extends HTMLElement {
         .neon { animation:neonf 4s linear infinite; }
         @keyframes neonf { 0%,18%,22%,62%,64%,100% { opacity:1; } 20%,63% { opacity:.55; } }
         .led { animation:glow 1.1s ease-in-out infinite alternate; }
+        .wx-spin { animation:wxspin 8s linear infinite; transform-box:fill-box; transform-origin:center; }
+        @keyframes wxspin { to { transform:rotate(360deg); } }
+        .wx-drift { animation:wxdrift 3s ease-in-out infinite alternate; }
+        .wx-drift.r { animation-direction:alternate-reverse; }
+        @keyframes wxdrift { from { transform:translateX(-9px); } to { transform:translateX(9px); } }
+        .wx-bob { animation:wxbob 3s ease-in-out infinite alternate; }
+        @keyframes wxbob { from { transform:translateY(-3.5px); } to { transform:translateY(3.5px); } }
+        .wx-drop { animation:wxdrop .9s linear infinite; }
+        .wx-drop.fast { animation-duration:.55s; }
+        @keyframes wxdrop { 0% { transform:translateY(0); opacity:0; } 20% { opacity:1; } 100% { transform:translateY(20px); opacity:0; } }
+        .wx-snow { animation:wxsnow 2.6s linear infinite; }
+        @keyframes wxsnow { 0% { transform:translate(0,0); opacity:0; } 15% { opacity:1; } 50% { transform:translate(3px,10px); } 100% { transform:translate(-2px,22px); opacity:0; } }
+        .wx-tw { animation:wxtw 1.1s ease-in-out infinite alternate; }
+        @keyframes wxtw { from { opacity:.08; } to { opacity:1; } }
+        .wx-flash { animation:wxflash 3s linear infinite; }
+        @keyframes wxflash { 0%,100% { opacity:.15; } 6%,10% { opacity:1; } 14% { opacity:.3; } 18% { opacity:1; } 24% { opacity:.15; } }
+        .wx-shoot { animation:wxshoot 5s linear infinite; opacity:0; }
+        @keyframes wxshoot { 0%,100% { opacity:0; transform:translate(0,0); } 4% { opacity:1; } 14% { opacity:0; transform:translate(-26px,15px); } }
+        .wx-fog { animation:wxfog 4s ease-in-out infinite alternate; }
+        @keyframes wxfog { from { transform:translateX(-4px); } to { transform:translateX(4px); } }
+        .wx-wind { stroke-dasharray:40 12; animation:wxwind 1.6s linear infinite; }
+        @keyframes wxwind { to { stroke-dashoffset:-52; } }
       </style>
       <ha-card>
         <svg viewBox="0 0 1000 ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet">
@@ -726,6 +900,9 @@ class HestiaFlowCard extends HTMLElement {
             <radialGradient id="gWin" cx=".5" cy=".6" r=".7"><stop offset="0" stop-color="#2b1a14"/><stop offset="1" stop-color="#0a0b0d"/></radialGradient>
             <radialGradient id="gGlow"><stop offset="0" stop-color="#ff5a36" stop-opacity=".55"/><stop offset="1" stop-color="#ff5a36" stop-opacity="0"/></radialGradient>
             <linearGradient id="gFlame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9a1f"/><stop offset="1" stop-color="#ff3d00"/></linearGradient>
+            <radialGradient id="gSun" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#fff0a8"/><stop offset="1" stop-color="#ffa81f"/></radialGradient>
+            <radialGradient id="gGlowM"><stop offset="0" stop-color="#f1e7b6" stop-opacity=".45"/><stop offset="1" stop-color="#f1e7b6" stop-opacity="0"/></radialGradient>
+            <radialGradient id="gGlowY"><stop offset="0" stop-color="#ffc233" stop-opacity=".5"/><stop offset="1" stop-color="#ffc233" stop-opacity="0"/></radialGradient>
             <filter id="fNeon" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035"/></pattern>
           </defs>
@@ -793,4 +970,4 @@ window.customCards.push({
   description: "Heating boiler, hot-water tank, radiators, underfloor, 3-way valves and Turbo - el / en / de",
   preview: false,
 });
-console.info("%c HESTIA-FLOW-CARD %c v0.0.1 · by Mouxritsa and Claude ", "background:#ff3fd8;color:#000;font-weight:700", "background:#222;color:#fff");
+console.info("%c HESTIA-FLOW-CARD %c v0.0.2 · by Mouxritsa and Claude ", "background:#ff3fd8;color:#000;font-weight:700", "background:#222;color:#fff");
